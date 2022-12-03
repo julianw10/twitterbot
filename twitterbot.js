@@ -42,8 +42,52 @@ var config = require('./config.js');
 var T = new Twit(config);
 
 // Setting up a user stream
-var stream = T.stream('statuses/filter', { track: twitterUsername });
+var stream = T.stream('statuses/filter', { follow: ['firecrackergirI'] });
 
 // Now looking for Tweet events
 // See: https://dev.Twitter.com/streaming/userstreams
 stream.on('tweet', pressStart);
+
+
+// ... append to bottom of file:
+
+function pressStart(tweet) {
+
+  var id = tweet.id_str;
+  var text = tweet.text;
+  var name = tweet.user.screen_name;
+
+  let regex = /(please)/gi;
+
+
+  let playerOne = text.match(regex) || [];
+  let playerTwo = playerOne.length > 0;
+
+  //this helps with errors, so you can see if the regex matched and if playerTwo is true or false
+  console.log(playerOne);
+  console.log(playerTwo);
+
+
+  // checks text of tweet for mention of SNESSoundtracks
+  if (playerTwo === true) {
+
+    // Start a reply back to the sender
+    var soundtrackArrayElement = Math.floor(Math.random() * soundtrackArrayLength);
+    var replyText = ("@" + name + " Here's your soundtrack: " + soundtrackArray[soundtrackArrayElement]);
+
+    // Post that tweet
+    T.post('statuses/update', { status: replyText, in_reply_to_status_id: id }, gameOver);
+
+  } else {
+    console.log("uh-uh-uh, they didn't say the magic word.");
+  };
+
+  function gameOver(err, reply) {
+    if (err) {
+      console.log(err.message);
+      console.log("Game Over");
+    } else {
+      console.log('Tweeted: ' + reply.text);
+    }
+  };
+}
